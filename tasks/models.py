@@ -1,3 +1,94 @@
 from django.db import models
 
-# Create your models here.
+
+class Mode(models.TextChoices):
+    """ファイルシステムへの影響"""
+    READ_ONLY = 'R', "Read only"
+    WRITABLE = 'W', "Writable"
+    UNKNOWN = 'U', 'Either can be read-only or write'
+
+
+class Answer(models.Model):
+    """分類結果"""
+
+    # そのタスクはファイルシステムへ影響を与えるかどうか
+    mode = models.TextField(verbose_name='モード',
+                            max_length=1,
+                            choices=Mode.choices,
+                            default=Mode.READ_ONLY)
+    # そのモジュールが置き換え可能かどうか
+    replaceable = models.BooleanField(verbose_name='置き換え可能',
+                                      default=False)
+    # 客観的に見てわかりやすい事例であればTrue
+    clearly = models.BooleanField(verbose_name='わかりやすい', default=False)
+    message = models.TextField(verbose_name='備考')
+    task = models.OneToOneField('Task',
+                                on_delete=models.CASCADE,
+                                null=True,
+                                blank=True,
+                                related_name='answer')
+
+    def __str__(self):
+        return f"{self.task_id} - {self.message[:15]}"
+
+
+class AnsibleModule(models.TextChoices):
+    """モジュールの選択肢"""
+    COMMAND = 'C', 'command'
+    SCRIPT = 'SC', 'script'
+    RAW = 'R', 'raw'
+    SHELL = 'SH', 'shell'
+
+
+class YamlFile(models.Model):
+    """各タスクを記述しているYAMLファイル"""
+
+    path = models.CharField(verbose_name='ファイルパス', max_length=255)
+    content = models.TextField(verbose_name='コンテンツ')
+
+    def __str__(self):
+        return self.path
+
+
+class RoleVersion(models.Model):
+    """各ロールのバージョン"""
+
+    name = models.CharField(verbose_name='バージョン名', max_length=255)
+    published_at = models.DateTimeField(verbose_name='公開日')
+    role = models.ForeignKey('Role',
+                             on_delete=models.CASCADE,
+                             related_name='versions')
+
+    def __str__(self):
+        return f"{self.role}-{self.name}"
+
+
+class Role(models.Model):
+    """ロールのメタデータ"""
+
+    name = models.CharField(verbose_name='ロール名', max_length=255)
+    owner = models.CharField(verbose_name='ユーザ', max_length=255)
+    repository = models.URLField(verbose_name='リポジトリ')
+
+    def __str__(self):
+        return f"{self.owner}.{self.name}"
+
+
+class Task(models.Model):
+    """各バージョンがもつタスク"""
+
+    name = models.CharField(verbose_name="name", max_length=255)
+    module = models.CharField(max_length=2,
+                              verbose_name='module',
+                              choices=AnsibleModule.choices,
+                              default=AnsibleModule.COMMAND)
+    script = models.TextField(verbose_name="script")
+    role_version = models.ForeignKey('RoleVersion',
+                                     on_delete=models.CASCADE,
+                                     related_name='tasks')
+    yaml = models.ForeignKey('YamlFile',
+                             on_delete=models.CASCADE,
+                             related_name='tasks')
+
+    def __str__(self):
+        return f"{self.script}"

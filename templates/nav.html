@@ -1,0 +1,17 @@
+<nav class="navbar navbar-expand-md  navbar-light bg-light">
+    <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navi" aria-controls="navi" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navi">
+        <ul class="navbar-nav">
+            {% if user.is_authenticated %}
+                <li class="nav-item"><a class="nav-link" href="{% url 'accounts:logout' %}">ログアウト</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'tasks:list' %}">処理待ち一覧</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">処理済み一覧</a></li>
+            {% else %}
+                <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">ログイン</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>

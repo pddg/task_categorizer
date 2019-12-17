@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}回答{% endblock %}
+
+{% block content %}
+    <div class="col-xl-7 col-md-6 col-sm-12">
+        <div class="card">
+            <div class="card-header">タスクの情報</div>
+            <div class="card-body">
+                <h5>{{ item.name }}</h5>
+                <pre class="prettyprint linenums">{{ item.raw|linebreaksbr }}</pre>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">ロール名：{{ item.role_version.role.owner }}.{{ item.role_version.role.name }}</li>
+                    <li class="list-group-item">リポジトリ：{{ item.role_version.role.repository|urlize }}</li>
+                    <li class="list-group-item">バージョン：{{ item.role_version.name }}</li>
+                </ul>
+                <p style="margin-top: 1rem;">
+                    <button type="button" class="btn btn-outline-primary" data-toggle="collapse" data-target="#wholeYaml" aria-expanded="false" aria-controls="wholeYaml">
+                        このタスクを含むYAML全体を表示する
+                    </button>
+                </p>
+                <div class="collapse" id="wholeYaml">
+                    <pre class="prettyprint linenums">{{ item.yaml.content|linebreaksbr }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-5 col-md-6 col-sm-12">
+        <div class="card">
+            <div class="card-header">
+                入力
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'tasks:answer' %}">
+                    <div class="form-group">
+                        {% csrf_token %}
+                        {{ form }}
+                        <button type="submit" class="btn btn-primary" style="margin-top: 1rem; ">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{#    <div class="col-xl-12" style="margin-top: 1rem; margin-bottom: 1rem;">#}
+{#        <div class="accordion" id="wholeYaml">#}
+{#            <div class="card">#}
+{#                <div class="card-header" id="yaml1">#}
+{#                    <h4>#}
+{#                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">#}
+{#                            タスクが記述されたYAML全体#}
+{#                        </button>#}
+{#                    </h4>#}
+{#                </div>#}
+{#                <div class="collapse" id="collapseOne" aria-labelledby="yaml1" data-parent="#wholeYaml">#}
+{#                    <div class="card-body">#}
+{#                        <pre class="prettyprint linenums">{{ item.yaml.content|linebreaksbr }}</pre>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{% endblock %}
+
+{% block additional_script %}
+    <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js?lang=yaml&skin=desert"></script>
+    <style>.prettyprint ol.linenums > li { list-style-type: decimal !important; }</style>
+{% endblock %}

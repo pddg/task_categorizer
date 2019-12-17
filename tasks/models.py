@@ -89,6 +89,7 @@ class Task(models.Model):
     yaml = models.ForeignKey('YamlFile',
                              on_delete=models.CASCADE,
                              related_name='tasks')
+    raw = models.TextField(verbose_name='Raw task')
 
     def __str__(self):
         return f"{self.script}"

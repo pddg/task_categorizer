@@ -33,12 +33,12 @@ class TaskAdmin(admin.ModelAdmin):
     list_filter = ('module',)
 
     def role_name(self, obj):
-        return obj.role.name
+        return obj.role_version.role.name
     role_name.short_description = 'ロール名'
     role_name.admin_order_field = 'role__name'
 
     def role_user(self, obj):
-        return obj.role.owner
+        return obj.role_version.role.owner
     role_user.short_description = 'ユーザ名'
     role_user.admin_order_field = 'role__owner'
 

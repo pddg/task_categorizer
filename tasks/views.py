@@ -24,6 +24,7 @@ class CompletedTaskListView(LoginRequiredMixin, ListView):
 class AnswerView(LoginRequiredMixin, FormView):
 
     template_name = 'tasks/answer.html'
+    form_class = AnswerPostForm
 
     def get_waited_task(self):
         """未処理のタスクを一つ返す"""
@@ -31,21 +32,22 @@ class AnswerView(LoginRequiredMixin, FormView):
 
     def get_success_url(self):
         latest_task = self.get_waited_task()
+        if latest_task is None:
+            return reverse('tasks:list')
         return reverse('tasks:answer', kwargs={'task_id': latest_task.pk})
 
-    def get_context_data(self, task_id: int, **kwargs):
-        ctx = super(AnswerView, self).get_context_data(**kwargs)
-        form = AnswerPostForm(None, task_id=task_id, **self.get_form_kwargs())
-        ctx['form'] = form
-        return ctx
-
     def get(self, request, *args, **kwargs):
-        task_id = kwargs.get('task_id', None)
+        task_id = request.GET.get('task_id', None)
         if task_id is None:
             task = self.get_waited_task()
         else:
             task = Task.objects.get(pk=int(task_id))
-        ctx = self.get_context_data(task_id)
+        if task is None:
+            return redirect('tasks:completed-list')
+        form = AnswerPostForm(instance=task.answer)
+        form.set_task(task.pk)
+        ctx = self.get_context_data(form=form)
+        ctx['item'] = task
         return self.render_to_response(ctx)
 
     def form_valid(self, form: 'AnswerPostForm'):
@@ -54,7 +56,13 @@ class AnswerView(LoginRequiredMixin, FormView):
         return redirect(self.get_success_url())
 
     def post(self, request, *args, **kwargs):
-        answer_form = AnswerPostForm(request.POST)
+        task_id = request.POST.get('task')[0]
+        task = Task.objects.get(pk=task_id)
+        if task.answer is not None:
+            instance = task.answer
+        else:
+            instance = None
+        answer_form = AnswerPostForm(request.POST, instance=instance)
         if answer_form.is_valid():
             return self.form_valid(answer_form)
         return self.form_invalid(answer_form)

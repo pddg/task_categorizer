@@ -3,12 +3,12 @@
 {% block title %}回答{% endblock %}
 
 {% block content %}
-    <div class="col-xl-7 col-md-6 col-sm-12">
+    <div class="col-xl-7 col-md-6 col-sm-12" style="margin-top: 1rem;">
         <div class="card">
             <div class="card-header">タスクの情報</div>
             <div class="card-body">
                 <h5>{{ item.name }}</h5>
-                <pre class="prettyprint linenums">{{ item.raw|linebreaksbr }}</pre>
+                <pre class="prettyprint linenums lang-yaml">{{ item.raw|linebreaksbr }}</pre>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">ロール名：{{ item.role_version.role.owner }}.{{ item.role_version.role.name }}</li>
                     <li class="list-group-item">リポジトリ：{{ item.role_version.role.repository|urlize }}</li>
@@ -20,48 +20,56 @@
                     </button>
                 </p>
                 <div class="collapse" id="wholeYaml">
-                    <pre class="prettyprint linenums">{{ item.yaml.content|linebreaksbr }}</pre>
+                    <h5>{{ item.yaml.path }}</h5>
+                    <pre class="prettyprint linenums lang-yaml">{{ item.yaml.content|linebreaksbr }}</pre>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-xl-5 col-md-6 col-sm-12">
+    <div class="col-xl-5 col-md-6 col-sm-12" style="margin-top: 1rem; margin-bottom: 1rem;">
         <div class="card">
             <div class="card-header">
                 入力
             </div>
             <div class="card-body">
                 <form method="post" action="{% url 'tasks:answer' %}">
+                    {% csrf_token %}
                     <div class="form-group">
-                        {% csrf_token %}
-                        {{ form }}
-                        <button type="submit" class="btn btn-primary" style="margin-top: 1rem; ">Submit</button>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <label class="input-group-text" for="{{ form.mode.id_for_label }}">{{ form.mode.label }}</label>
+                            </div>
+                            {{ form.mode }}
+                        </div>
                     </div>
+                    <div class="form-group">
+                        <div class="custom-control custom-switch">
+                            {{ form.replaceable }}
+                            <label class="custom-control-label" for="{{ form.replaceable.id_for_label }}">{{ form.replaceable.label }}</label>
+                        </div>
+                        <div class="custom-control custom-switch">
+                            {{ form.clearly }}
+                            <label class="custom-control-label" for="{{ form.clearly.id_for_label }}">{{ form.clearly.label }}</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ form.message.label_tag }}
+                        {{ form.message }}
+                    </div>
+                    {{ form.task }}
+                    <button type="submit" class="btn btn-primary" style="margin-top: 1rem; ">Submit</button>
                 </form>
             </div>
         </div>
     </div>
-{#    <div class="col-xl-12" style="margin-top: 1rem; margin-bottom: 1rem;">#}
-{#        <div class="accordion" id="wholeYaml">#}
-{#            <div class="card">#}
-{#                <div class="card-header" id="yaml1">#}
-{#                    <h4>#}
-{#                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">#}
-{#                            タスクが記述されたYAML全体#}
-{#                        </button>#}
-{#                    </h4>#}
-{#                </div>#}
-{#                <div class="collapse" id="collapseOne" aria-labelledby="yaml1" data-parent="#wholeYaml">#}
-{#                    <div class="card-body">#}
-{#                        <pre class="prettyprint linenums">{{ item.yaml.content|linebreaksbr }}</pre>#}
-{#                    </div>#}
-{#                </div>#}
-{#            </div>#}
-{#        </div>#}
-{#    </div>#}
 {% endblock %}
 
 {% block additional_script %}
     <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js?lang=yaml&skin=desert"></script>
-    <style>.prettyprint ol.linenums > li { list-style-type: decimal !important; }</style>
+    <style>
+        .prettyprint ol.linenums > li { list-style-type: decimal !important; }
+        .prettyprint {
+            padding: 10px;
+        }
+    </style>
 {% endblock %}

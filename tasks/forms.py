@@ -1,6 +1,7 @@
 from django import forms
+from django.contrib import messages
 
-from .models import Answer
+from .models import Answer, NotReplaceableReason
 
 
 class AnswerPostForm(forms.ModelForm):
@@ -8,7 +9,7 @@ class AnswerPostForm(forms.ModelForm):
     class Meta:
         model = Answer
         fields = [
-            'mode', 'replaceable', 'clearly', 'message', 'task'
+            'mode', 'replaceable', 'clearly', 'message', 'task', 'reason'
         ]
 
     def __init__(self, *args, **kwargs):
@@ -27,6 +28,17 @@ class AnswerPostForm(forms.ModelForm):
         if task_id is None:
             raise AttributeError("Task IDが指定されていません")
         self.fields['task'].initial = task_id
+
+    def clean_reason(self):
+        reason = self.cleaned_data['reason']
+        is_replaceable = self.cleaned_data['replaceable']
+        if not is_replaceable and reason == NotReplaceableReason.NO_CHOICE.value:
+            self.fields['reason'].widget.attrs['class'] = "custom-select is-invalid"
+            self.add_error('reason', forms.ValidationError('置き換え不可能である時はその理由を選択する必要があります．'))
+        if is_replaceable and reason != NotReplaceableReason.NO_CHOICE.value:
+            self.fields['reason'].widget.attrs['class'] = "custom-select is-invalid"
+            self.add_error('reason', forms.ValidationError('置き換え可能な時にこの理由は選択できません．'))
+        return reason
 
 
 

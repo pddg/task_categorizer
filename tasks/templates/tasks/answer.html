@@ -47,6 +47,15 @@
                             {{ form.replaceable }}
                             <label class="custom-control-label" for="{{ form.replaceable.id_for_label }}">{{ form.replaceable.label }}</label>
                         </div>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <label class="input-group-text" for="{{ form.reason.id_for_label }}">{{ form.reason.label }}</label>
+                            </div>
+                            {{ form.reason }}
+                            {% if form.reason.errors %}<div class="invalid-feedback">{{ form.reason.errors|join:', ' }}</div>{% endif %}
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <div class="custom-control custom-switch">
                             {{ form.clearly }}
                             <label class="custom-control-label" for="{{ form.clearly.id_for_label }}">{{ form.clearly.label }}</label>

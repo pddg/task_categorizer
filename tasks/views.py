@@ -48,6 +48,12 @@ class AnswerView(LoginRequiredMixin, FormView):
             return reverse('tasks:list')
         return reverse('tasks:answer', kwargs={'task_id': latest_task.pk})
 
+    def get_context_data(self, **kwargs):
+        task = kwargs.pop('task')
+        ctx = super(AnswerView, self).get_context_data(**kwargs)
+        ctx['item'] = task
+        return ctx
+
     def get(self, request, *args, **kwargs):
         task_id = request.GET.get('task_id', None)
         if task_id is None:
@@ -58,8 +64,7 @@ class AnswerView(LoginRequiredMixin, FormView):
             return redirect('tasks:completed-list')
         form = AnswerPostForm(instance=task.answer)
         form.set_task(task.pk)
-        ctx = self.get_context_data(form=form)
-        ctx['item'] = task
+        ctx = self.get_context_data(form=form, task=task)
         return self.render_to_response(ctx)
 
     def form_valid(self, form: 'AnswerPostForm'):
@@ -77,4 +82,6 @@ class AnswerView(LoginRequiredMixin, FormView):
         answer_form = AnswerPostForm(request.POST, instance=instance)
         if answer_form.is_valid():
             return self.form_valid(answer_form)
-        return self.form_invalid(answer_form)
+        messages.error(request, f'バリデーションエラーです')
+        ctx = self.get_context_data(form=answer_form, task=task)
+        return self.render_to_response(ctx)

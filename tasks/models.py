@@ -8,6 +8,15 @@ class Mode(models.TextChoices):
     UNKNOWN = 'U', 'Either can be read-only or write'
 
 
+class NotReplaceableReason(models.TextChoices):
+    """置き換え不可能な理由"""
+    NOT_SUPPORTED = 'NS', 'サポートしていない操作である'
+    TOO_COMPLICATE = 'TC', '複雑になりすぎる'
+    CANNOT_JUDGE = 'CJ', '判断できない'
+    COMPATIBILITY = 'C', '互換性のため'
+    NO_CHOICE = 'NC', '---'
+
+
 class Answer(models.Model):
     """分類結果"""
 
@@ -19,6 +28,11 @@ class Answer(models.Model):
     # そのモジュールが置き換え可能かどうか
     replaceable = models.BooleanField(verbose_name='置き換え可能',
                                       default=False)
+    # 置き換えることができない理由
+    reason = models.TextField(verbose_name="置き換え不可能である理由",
+                              max_length=2,
+                              choices=NotReplaceableReason.choices,
+                              default=NotReplaceableReason.NO_CHOICE)
     # 客観的に見てわかりやすい事例であればTrue
     clearly = models.BooleanField(verbose_name='わかりやすい', default=False)
     message = models.TextField(verbose_name='備考')

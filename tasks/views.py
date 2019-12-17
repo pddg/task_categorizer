@@ -13,12 +13,24 @@ class TaskListView(LoginRequiredMixin, ListView):
 
     template_name = 'tasks/task_list.html'
     queryset = Task.objects.filter(answer__isnull=True)
+    paginate_by = 20
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        ctx = super(TaskListView, self).get_context_data(object_list=object_list, **kwargs)
+        ctx['is_processed'] = False
+        return ctx
 
 
 class CompletedTaskListView(LoginRequiredMixin, ListView):
     """処理済みのタスク一覧を返す"""
     template_name = 'tasks/task_list.html'
     queryset = Task.objects.filter(answer__isnull=False)
+    paginate_by = 20
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        ctx = super(CompletedTaskListView, self).get_context_data(object_list=object_list, **kwargs)
+        ctx['is_processed'] = True
+        return ctx
 
 
 class AnswerView(LoginRequiredMixin, FormView):

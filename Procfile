@@ -1,0 +1,1 @@
+web: gunicorn task_categorizer.wsgi --log-file -

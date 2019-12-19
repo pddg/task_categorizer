@@ -5,6 +5,7 @@ from hashlib import sha1
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import pytz
 from django.core.management.base import BaseCommand
 from django.db.models.functions import SHA1
 
@@ -17,7 +18,7 @@ date_fmt = "%Y-%m-%d %H:%M:%S.%f"
 
 
 def to_date(date_str: str) -> 'datetime':
-    return datetime.strptime(date_str, date_fmt)
+    return datetime.strptime(date_str, date_fmt).astimezone(pytz.UTC)
 
 
 def get_or_create_role(line: 'dict') -> 'models.Role':
@@ -83,12 +84,14 @@ class Command(BaseCommand):
             self.stderr.write("Specified csv does not exist.", self.style.ERROR)
             exit(1)
 
+        i = 0
         with csv_file.open('r') as f:
             reader = csv.DictReader(f)
             for line in reader:
+                i += 1
                 role = get_or_create_role(line)
                 version = get_or_create_version(line, role)
                 yaml_file = get_or_create_yaml(line)
                 task = create_task(line, yaml_file, version)
-                self.stderr.write(f"Create {task}", self.style.SUCCESS)
+        self.stderr.write(f"Create {i} tasks.", self.style.SUCCESS)
         self.stderr.write("Done.", self.style.SUCCESS)

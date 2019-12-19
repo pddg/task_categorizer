@@ -1,5 +1,6 @@
 import base64
 import csv
+import subprocess
 from datetime import datetime
 from hashlib import sha1
 from pathlib import Path
@@ -12,9 +13,19 @@ from django.db.models.functions import SHA1
 from tasks import models
 
 if TYPE_CHECKING:
-    pass
+    from typing import List
 
 date_fmt = "%Y-%m-%d %H:%M:%S.%f"
+
+
+def exec_command(commands: 'List[str]', workdir: 'Path') -> int:
+    ch = subprocess.run(
+        commands,
+        cwd=str(workdir),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    return ch.returncode
 
 
 def to_date(date_str: str) -> 'datetime':
@@ -36,10 +47,14 @@ def get_or_create_version(line: 'dict', role: 'models.Role') -> 'models.RoleVers
                                                     min_ansible_version=min_ansible_version)[0]
 
 
-def get_or_create_yaml(line: 'dict') -> 'models.YamlFile':
-    yaml_file = Path(line['yaml_path']).expanduser().resolve()
+def get_or_create_yaml(line: 'dict', ghq_root: 'Path') -> 'models.YamlFile':
+    yaml_file = (ghq_root / line['yaml_path']).expanduser().resolve()
     if not yaml_file.exists():
         raise FileNotFoundError(f"{yaml_file} does not exists")
+    version = line['role_version']
+    if exec_command(['git', 'checkout', f"refs/tags/{version}"], yaml_file.parent) != 0:
+        if exec_command(['git', 'checkout', version], yaml_file.parent) != 0:
+            print(f"Failed to checkout version {version} of {line['role_owner']}.{line['role_name']} ({yaml_file})")
     with yaml_file.open('r') as f:
         content = f.read()
     digest = sha1(content.encode('utf-8')).hexdigest()
@@ -76,6 +91,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--csv', type=Path, required=True, help='Path to CSV file')
+        parser.add_argument('--root', type=Path, required=True, help='Path to GHQ_ROOT')
 
     def handle(self, *args, **options):
         csv_file = options.get('csv')
@@ -91,7 +107,7 @@ class Command(BaseCommand):
                 i += 1
                 role = get_or_create_role(line)
                 version = get_or_create_version(line, role)
-                yaml_file = get_or_create_yaml(line)
-                task = create_task(line, yaml_file, version)
+                yaml_file = get_or_create_yaml(line, options.get('root'))
+                create_task(line, yaml_file, version)
         self.stderr.write(f"Create {i} tasks.", self.style.SUCCESS)
         self.stderr.write("Done.", self.style.SUCCESS)

@@ -14,7 +14,9 @@ $ env LDFLAGS="-L$(brew --prefix openssl)/lib" pipenv install
 
 ```bash
 $ pipenv run manage.py migrate
-$ pipenv run manage.py load_tasks --csv path/to/task.csv
+$ pipenv run manage.py load_tasks \
+    --csv path/to/task.csv \
+    --root path/to/GHQ_ROOT
 $ pipenv run manage.py createsuperuser
 $ pipenv run manage.py runserver
 ```

@@ -83,8 +83,12 @@ WSGI_APPLICATION = 'task_categorizer.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': str(BASE_DIR / 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+        'NAME': os.getenv('POSTGRES_DB', 'task'),
+        'USER': os.getenv('POSTGRES_USER', 'task'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'taskcategorizer'),
     }
 }
 

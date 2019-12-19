@@ -3,7 +3,18 @@ from django.contrib import admin
 from . import models
 
 
-class YamlAdmin(admin.ModelAdmin):
+class DoNotLog:
+    def log_addition(self, *args, **kwargs):
+        return
+
+    def log_change(self, *args, **kwargs):
+        return
+
+    def log_deletion(self, *args, **kwargs):
+        return
+
+
+class YamlAdmin(DoNotLog, admin.ModelAdmin):
     list_display = ('path', 'task_count')
 
     def task_count(self, obj):
@@ -11,7 +22,7 @@ class YamlAdmin(admin.ModelAdmin):
     task_count.short_description = 'タスク数'
 
 
-class AnswerAdmin(admin.ModelAdmin):
+class AnswerAdmin(DoNotLog, admin.ModelAdmin):
     list_display = ('id', 'task_script', 'mode', 'replaceable', 'clearly', 'short_message')
     list_filter = ('mode', 'replaceable', 'clearly')
 
@@ -28,7 +39,7 @@ class AnswerAdmin(admin.ModelAdmin):
     short_message.short_description = '備考'
 
 
-class TaskAdmin(admin.ModelAdmin):
+class TaskAdmin(DoNotLog, admin.ModelAdmin):
     list_display = ('module', 'script', 'role_name', 'role_user')
     list_filter = ('module',)
 
@@ -43,11 +54,11 @@ class TaskAdmin(admin.ModelAdmin):
     role_user.admin_order_field = 'role__owner'
 
 
-class RoleAdmin(admin.ModelAdmin):
+class RoleAdmin(DoNotLog, admin.ModelAdmin):
     list_display = ('name', 'owner', 'repository')
 
 
-class RoleVersionAdmin(admin.ModelAdmin):
+class RoleVersionAdmin(DoNotLog, admin.ModelAdmin):
     list_display = ('role_name', 'name', 'published_at', 'task_count')
 
     def role_name(self, obj):

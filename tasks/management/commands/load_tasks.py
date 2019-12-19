@@ -1,20 +1,20 @@
-import csv
 import base64
-from hashlib import sha1
+import csv
 from datetime import datetime
-from typing import TYPE_CHECKING
+from hashlib import sha1
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from django.db.models.functions import SHA1
 from django.core.management.base import BaseCommand
+from django.db.models.functions import SHA1
 
 from tasks import models
 
 if TYPE_CHECKING:
     pass
 
-
 date_fmt = "%Y-%m-%d %H:%M:%S.%f"
+
 
 def to_date(date_str: str) -> 'datetime':
     return datetime.strptime(date_str, date_fmt)
@@ -24,29 +24,28 @@ def get_or_create_role(line: 'dict') -> 'models.Role':
     role_name = line['role_name']
     owner = line['role_owner']
     repository = line['role_repository']
-    return models.Role.objects.get_or_create(name=role_name, owner=owner, repository=repository)
+    return models.Role.objects.get_or_create(name=role_name, owner=owner, repository=repository)[0]
 
 
 def get_or_create_version(line: 'dict', role: 'models.Role') -> 'models.RoleVersion':
     version = line['role_version']
+    min_ansible_version = line['min_ansible_version']
     published_at = to_date(line['published_at'])
-    version = role.versions.filter(name=version).first()
-    if version:
-        return version
-    return models.RoleVersion.objects.create(name=version, role=role, published_at=published_at)
+    return models.RoleVersion.objects.get_or_create(name=version, role=role, published_at=published_at,
+                                                    min_ansible_version=min_ansible_version)[0]
 
 
 def get_or_create_yaml(line: 'dict') -> 'models.YamlFile':
-    yaml_file = Path(line['path']).expanduser().resolve()
+    yaml_file = Path(line['yaml_path']).expanduser().resolve()
     if not yaml_file.exists():
         raise FileNotFoundError(f"{yaml_file} does not exists")
     with yaml_file.open('r') as f:
         content = f.read()
-    digest = sha1(bytes(content)).hexdigest()
-    yaml = models.YamlFile.objects.\
-        annotate(content_hash=SHA1('content')).\
-        filter(content_hash=digest).\
-        filter(path=str(yaml_file)).\
+    digest = sha1(content.encode('utf-8')).hexdigest()
+    yaml = models.YamlFile.objects. \
+        annotate(content_hash=SHA1('content')). \
+        filter(content_hash=digest). \
+        filter(path=str(yaml_file)). \
         first()
     if yaml:
         return yaml
@@ -59,9 +58,11 @@ def get_or_create_yaml(line: 'dict') -> 'models.YamlFile':
 def create_task(line: 'dict', yaml: 'models.YamlFile', version: 'models.RoleVersion') -> 'models.Task':
     script = line['script']
     module = line['module']
-    raw_yaml = str(base64.b64decode(line['raw_base64'].encode("utf-8")), 'utf-8')
+    name = line['name']
+    raw_yaml = str(base64.b64decode(line['yaml'].encode("utf-8")), 'utf-8')
     return models.Task.objects.create(
-        module=models.AnsibleModule(module),
+        name=name,
+        module=models.AnsibleModule[module.upper()],
         script=script,
         yaml=yaml,
         role_version=version,
@@ -70,7 +71,6 @@ def create_task(line: 'dict', yaml: 'models.YamlFile', version: 'models.RoleVers
 
 
 class Command(BaseCommand):
-
     help = 'Load tasks to categorize from given CSV'
 
     def add_arguments(self, parser):
@@ -92,4 +92,3 @@ class Command(BaseCommand):
                 task = create_task(line, yaml_file, version)
                 self.stderr.write(f"Create {task}", self.style.SUCCESS)
         self.stderr.write("Done.", self.style.SUCCESS)
-

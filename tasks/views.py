@@ -62,7 +62,10 @@ class AnswerView(LoginRequiredMixin, FormView):
             task = Task.objects.get(pk=int(task_id))
         if task is None:
             return redirect('tasks:completed-list')
-        form = AnswerPostForm(instance=task.answer)
+        try:
+            form = AnswerPostForm(instance=task.answer)
+        except Exception:
+            form = AnswerPostForm()
         form.set_task(task.pk)
         ctx = self.get_context_data(form=form, task=task)
         return self.render_to_response(ctx)

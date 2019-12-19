@@ -68,6 +68,7 @@ class RoleVersion(models.Model):
     """各ロールのバージョン"""
 
     name = models.CharField(verbose_name='バージョン名', max_length=255)
+    min_ansible_version = models.CharField(verbose_name='最小Ansibleバージョン', max_length=10)
     published_at = models.DateTimeField(verbose_name='公開日')
     role = models.ForeignKey('Role',
                              on_delete=models.CASCADE,

@@ -35,7 +35,7 @@ class Answer(models.Model):
                               default=NotReplaceableReason.NO_CHOICE)
     # 客観的に見てわかりやすい事例であればTrue
     clearly = models.BooleanField(verbose_name='わかりやすい', default=False)
-    message = models.TextField(verbose_name='備考')
+    message = models.TextField(verbose_name='備考', default="", blank=True)
     task = models.OneToOneField('Task',
                                 on_delete=models.CASCADE,
                                 null=True,

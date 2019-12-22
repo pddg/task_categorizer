@@ -32,7 +32,7 @@
                 入力
             </div>
             <div class="card-body">
-                <form method="post" action="{% url 'tasks:answer' %}">
+                <form method="post" action="{% url 'tasks:answer' item.id %}">
                     {% csrf_token %}
                     <div class="form-group">
                         <div class="input-group mb-3">

@@ -23,7 +23,7 @@
                         <tbody>
                         {% for item in task_list %}
                             <tr>
-                                <td><a style="display: block;" href="{% url 'tasks:answer' %}?task_id={{ item.pk }}">{{ item.pk }}</a></td>
+                                <td><a style="display: block;" href="{% url 'tasks:answer' item.pk %}">{{ item.pk }}</a></td>
                                 <td>{{ item.get_module_display }}</td>
                                 <td>{{ item.script|truncatechars:20 }}</td>
                                 <td>{{ item.name|truncatechars:20 }}</td>

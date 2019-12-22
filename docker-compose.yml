@@ -9,6 +9,7 @@ services:
       - "54321:5432"
   app:
     image: pddg/task_categorizer:latest
+    command: python3 manage.py runserver 0.0.0.0:8000
     env_file:
       - .env
     environment:

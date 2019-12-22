@@ -78,11 +78,10 @@ class AnswerView(LoginRequiredMixin, FormView):
     def post(self, request, *args, **kwargs):
         task_id = request.POST.get('task')[0]
         task = Task.objects.get(pk=task_id)
-        if task.answer is not None:
-            instance = task.answer
-        else:
-            instance = None
-        answer_form = AnswerPostForm(request.POST, instance=instance)
+        try:
+            answer_form = AnswerPostForm(request.POST, instance=task.answer)
+        except Exception:
+            answer_form = AnswerPostForm(request.POST)
         if answer_form.is_valid():
             return self.form_valid(answer_form)
         messages.error(request, f'バリデーションエラーです')

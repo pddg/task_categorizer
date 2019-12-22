@@ -55,7 +55,7 @@ class AnswerView(LoginRequiredMixin, FormView):
         return ctx
 
     def get(self, request, *args, **kwargs):
-        task_id = request.GET.get('task_id', None)
+        task_id = kwargs.get('task_id', None)
         if task_id is None:
             task = self.get_waited_task()
         else:
@@ -76,7 +76,7 @@ class AnswerView(LoginRequiredMixin, FormView):
         return redirect(self.get_success_url())
 
     def post(self, request, *args, **kwargs):
-        task_id = request.POST.get('task')[0]
+        task_id = kwargs.get('task_id')
         task = Task.objects.get(pk=task_id)
         try:
             answer_form = AnswerPostForm(request.POST, instance=task.answer)

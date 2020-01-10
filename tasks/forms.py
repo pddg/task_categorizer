@@ -40,5 +40,21 @@ class AnswerPostForm(forms.ModelForm):
             self.add_error('reason', forms.ValidationError('置き換え可能な時にこの理由は選択できません．'))
         return reason
 
+    def clean_category(self):
+        category = self.cleaned_data['category']
+        if category is None:
+            self.fields['category'].widget.attrs['class'] = "custom-select is-invalid"
+            self.add_error('category', forms.ValidationError('カテゴリが未選択です'))
+        return category
+
+    def clean_alternate_module(self):
+        mod = self.cleaned_data['alternate_module']
+        is_replaceable = self.cleaned_data['replaceable']
+        if is_replaceable:
+            if mod is None or len(mod) == 0:
+                self.fields['alternate_module'].widget.attrs['class'] = "form-control is-invalid"
+                self.add_error('alternate_module', forms.ValidationError('代替可能モジュールが未入力です'))
+        return mod
+
 
 

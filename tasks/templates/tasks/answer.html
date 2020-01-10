@@ -46,6 +46,7 @@
                                 <label class="input-group-text" for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
                             </div>
                             {{ form.category }}
+                            {% if form.category.errors %}<div class="invalid-feedback">{{ form.category.errors|join:', ' }}</div>{% endif %}
                         </div>
                     </div>
                     <div class="form-group">
@@ -67,6 +68,7 @@
                                 <label class="input-group-text" for="{{ form.alternate_module.id_for_label }}">{{ form.alternate_module.label }}</label>
                             </div>
                             {{ form.alternate_module }}
+                            {% if form.alternate_module.errors %}<div class="invalid-feedback">{{ form.alternate_module.errors|join:', ' }}</div>{% endif %}
                         </div>
                         <div class="input-group">
                             <div class="input-group-prepend">

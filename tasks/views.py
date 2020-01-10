@@ -12,7 +12,7 @@ class TaskListView(LoginRequiredMixin, ListView):
     """未処理のタスク一覧を返す"""
 
     template_name = 'tasks/task_list.html'
-    queryset = Task.objects.filter(answer__isnull=True)
+    queryset = Task.objects.filter(answer__isnull=True).order_by('pk')
     paginate_by = 20
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -24,7 +24,7 @@ class TaskListView(LoginRequiredMixin, ListView):
 class CompletedTaskListView(LoginRequiredMixin, ListView):
     """処理済みのタスク一覧を返す"""
     template_name = 'tasks/task_list.html'
-    queryset = Task.objects.filter(answer__isnull=False)
+    queryset = Task.objects.filter(answer__isnull=False).order_by('pk')
     paginate_by = 20
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -38,12 +38,15 @@ class AnswerView(LoginRequiredMixin, FormView):
     template_name = 'tasks/answer.html'
     form_class = AnswerPostForm
 
-    def get_waited_task(self):
-        """未処理のタスクを一つ返す"""
-        return Task.objects.filter(answer__isnull=True).first()
+    def get_next_task(self, current_id):
+        """次のタスクを一つ返す"""
+        try:
+            return Task.objects.order_by('pk').get(pk=current_id+1)
+        except:
+            return None
 
-    def get_success_url(self):
-        latest_task = self.get_waited_task()
+    def get_success_url(self, current_id):
+        latest_task = self.get_next_task(current_id)
         if latest_task is None:
             return reverse('tasks:list')
         return reverse('tasks:answer', kwargs={'task_id': latest_task.pk})
@@ -57,7 +60,7 @@ class AnswerView(LoginRequiredMixin, FormView):
     def get(self, request, *args, **kwargs):
         task_id = kwargs.get('task_id', None)
         if task_id is None:
-            task = self.get_waited_task()
+            task = Task.objects.filter(answer__isnull=True).order_by('pk').first()
         else:
             task = Task.objects.get(pk=int(task_id))
         if task is None:
@@ -73,7 +76,7 @@ class AnswerView(LoginRequiredMixin, FormView):
     def form_valid(self, form: 'AnswerPostForm'):
         obj = form.save()
         messages.info(self.request, f"結果を保存しました．Task ID: {obj.task.pk}")
-        return redirect(self.get_success_url())
+        return redirect(self.get_success_url(obj.task.pk))
 
     def post(self, request, *args, **kwargs):
         task_id = kwargs.get('task_id')

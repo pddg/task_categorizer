@@ -1,0 +1,44 @@
+[
+  {
+    "model": "tasks.Category",
+    "pk": 1,
+    "fields": {
+      "name": "app"
+    }
+  },
+  {
+    "model": "tasks.Category",
+    "pk": 2,
+    "fields": {
+      "name": "db"
+    }
+  },
+  {
+    "model": "tasks.Category",
+    "pk": 3,
+    "fields": {
+      "name": "fs"
+    }
+  },
+  {
+    "model": "tasks.Category",
+    "pk": 4,
+    "fields": {
+      "name": "file"
+    }
+  },
+  {
+    "model": "tasks.Category",
+    "pk": 5,
+    "fields": {
+      "name": "system"
+    }
+  },
+  {
+    "model": "tasks.Category",
+    "pk": 6,
+    "fields": {
+      "name": "other"
+    }
+  }
+]

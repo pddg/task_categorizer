@@ -22,6 +22,17 @@ class YamlAdmin(DoNotLog, admin.ModelAdmin):
     task_count.short_description = 'タスク数'
 
 
+class CategoryAdmin(DoNotLog, admin.ModelAdmin):
+    list_display = ('id', 'name', 'task_count')
+
+    def task_count(self, obj):
+        try:
+            return len(obj.answers)
+        except Exception:
+            return 0
+    task_count.short_description = "タスク数"
+
+
 class AnswerAdmin(DoNotLog, admin.ModelAdmin):
     list_display = ('id', 'task_script', 'mode', 'replaceable', 'clearly', 'short_message')
     list_filter = ('mode', 'replaceable', 'clearly')
@@ -71,6 +82,7 @@ class RoleVersionAdmin(DoNotLog, admin.ModelAdmin):
 
 
 admin.site.register(models.YamlFile, YamlAdmin)
+admin.site.register(models.Category, CategoryAdmin)
 admin.site.register(models.Answer, AnswerAdmin)
 admin.site.register(models.Task, TaskAdmin)
 admin.site.register(models.Role, RoleAdmin)

@@ -14,7 +14,18 @@ class NotReplaceableReason(models.TextChoices):
     TOO_COMPLICATE = 'TC', '複雑になりすぎる'
     CANNOT_JUDGE = 'CJ', '判断できない'
     COMPATIBILITY = 'C', '互換性のため'
+    BUG = 'B', 'モジュールがバグを含むため'
     NO_CHOICE = 'NC', '---'
+
+
+class Category(models.Model):
+    """そのタスクの属するカテゴリ"""
+    name = models.CharField(verbose_name="カテゴリ名",
+                            max_length=255,
+                            unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Answer(models.Model):
@@ -35,12 +46,24 @@ class Answer(models.Model):
                               default=NotReplaceableReason.NO_CHOICE)
     # 客観的に見てわかりやすい事例であればTrue
     clearly = models.BooleanField(verbose_name='わかりやすい', default=False)
+    # 代替可能モジュールの名称
+    alternate_module = models.CharField(verbose_name="代替可能モジュール",
+                                        max_length=30,
+                                        default=None,
+                                        blank=True,
+                                        null=True)
     message = models.TextField(verbose_name='備考', default="", blank=True)
     task = models.OneToOneField('Task',
                                 on_delete=models.CASCADE,
                                 null=True,
                                 blank=True,
                                 related_name='answer')
+    # そのタスクが属するカテゴリ
+    category = models.ForeignKey('Category',
+                                 on_delete=models.SET_NULL,
+                                 related_name='answers',
+                                 null=True,
+                                 blank=True)
 
     def __str__(self):
         return f"{self.task_id} - {self.message[:15]}"

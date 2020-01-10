@@ -27,7 +27,7 @@ class CategoryAdmin(DoNotLog, admin.ModelAdmin):
 
     def task_count(self, obj):
         try:
-            return len(obj.answers)
+            return len(obj.answers.all())
         except Exception:
             return 0
     task_count.short_description = "タスク数"

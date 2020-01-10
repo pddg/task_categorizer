@@ -9,7 +9,7 @@ class AnswerPostForm(forms.ModelForm):
     class Meta:
         model = Answer
         fields = [
-            'mode', 'replaceable', 'clearly', 'message', 'task', 'reason'
+            'mode', 'replaceable', 'clearly', 'message', 'task', 'reason', 'category', 'alternate_module'
         ]
 
     def __init__(self, *args, **kwargs):
@@ -17,14 +17,14 @@ class AnswerPostForm(forms.ModelForm):
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-control"
             if isinstance(field.widget, forms.Textarea):
-                field.widget.attrs["rows"] = 3
+                field.widget.attrs["rows"] = 1
             if isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs['class'] = "custom-control-input"
             if isinstance(field.widget, forms.Select):
                 field.widget.attrs['class'] = "custom-select"
+        self.fields['task'].widget = forms.HiddenInput()
 
     def set_task(self, task_id: int):
-        self.fields['task'].widget = forms.HiddenInput()
         if task_id is None:
             raise AttributeError("Task IDが指定されていません")
         self.fields['task'].initial = task_id

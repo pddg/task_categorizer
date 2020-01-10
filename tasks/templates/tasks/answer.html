@@ -41,31 +41,47 @@
                             </div>
                             {{ form.mode }}
                         </div>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <label class="input-group-text" for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
+                            </div>
+                            {{ form.category }}
+                        </div>
                     </div>
                     <div class="form-group">
-                        <div class="custom-control custom-switch">
-                            {{ form.replaceable }}
-                            <label class="custom-control-label" for="{{ form.replaceable.id_for_label }}">{{ form.replaceable.label }}</label>
-                        </div>
                         <div class="input-group mb-3">
+                            <div class="custom-control custom-switch">
+                                {{ form.replaceable }}
+                                <label class="custom-control-label" for="{{ form.replaceable.id_for_label }}">{{ form.replaceable.label }}</label>
+                            </div>
+                        </div>
+                        <div class="input-group mb-3" id="reason_selector">
                             <div class="input-group-prepend">
                                 <label class="input-group-text" for="{{ form.reason.id_for_label }}">{{ form.reason.label }}</label>
                             </div>
                             {{ form.reason }}
                             {% if form.reason.errors %}<div class="invalid-feedback">{{ form.reason.errors|join:', ' }}</div>{% endif %}
                         </div>
+                        <div class="input-group mb-3" id="module_box">
+                            <div class="input-group-prepend">
+                                <label class="input-group-text" for="{{ form.alternate_module.id_for_label }}">{{ form.alternate_module.label }}</label>
+                            </div>
+                            {{ form.alternate_module }}
+                        </div>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <label class="input-group-text" for="{{ form.message.id_for_label }}">{{ form.message.label }}</label>
+                            </div>
+                            {{ form.message }}
+                        </div>
                     </div>
+                    {{ form.task }}
                     <div class="form-group">
                         <div class="custom-control custom-switch">
                             {{ form.clearly }}
                             <label class="custom-control-label" for="{{ form.clearly.id_for_label }}">{{ form.clearly.label }}</label>
                         </div>
                     </div>
-                    <div class="form-group">
-                        {{ form.message.label_tag }}
-                        {{ form.message }}
-                    </div>
-                    {{ form.task }}
                     <button type="submit" class="btn btn-primary" style="margin-top: 1rem; ">Submit</button>
                 </form>
             </div>
@@ -75,6 +91,32 @@
 
 {% block additional_script %}
     <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js?lang=yaml&skin=desert"></script>
+    <script type="application/javascript">
+        const isReplaceable = document.getElementById('id_replaceable');
+        const reason = document.getElementById('id_reason');
+        const altModule = document.getElementById('id_alternate_module');
+        const moduleBox = document.getElementById('module_box');
+        const reasonBox = document.getElementById('reason_selector');
+        let selectedReason = reason.value;
+        let selectedModule = altModule.value;
+        function toggle(isEnabled) {
+            reasonBox.hidden = isEnabled;
+            moduleBox.hidden = !isEnabled;
+            if (isEnabled) {
+                altModule.value = selectedModule;
+                selectedReason = reason.value;
+                reason.value = 'NC';
+            } else {
+                selectedModule = altModule.value;
+                altModule.value = '';
+                reason.value = selectedReason;
+            }
+        }
+        toggle(isReplaceable.checked);
+        isReplaceable.addEventListener('change', (e) => {
+            toggle(e.target.checked)
+        });
+    </script>
     <style>
         .prettyprint ol.linenums > li { list-style-type: decimal !important; }
         .prettyprint {

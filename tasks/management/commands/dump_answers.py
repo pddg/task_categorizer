@@ -22,7 +22,7 @@ def get_all_answers():
 
 def to_csv_data(answers: "List[models.Answer]") -> "List[List[str]]":
     rows = []
-    headers = ["category", "replaceable", "reason", "clearly", "alternate_module", "message"]
+    headers = ["mode", "category", "replaceable", "reason", "clearly", "alternate_module", "message"]
     rows.append(headers)
     for answer in answers:
         category = answer.category
@@ -31,6 +31,7 @@ def to_csv_data(answers: "List[models.Answer]") -> "List[List[str]]":
         else:
             category = category.name
         row = [
+            answer.mode,
             category,
             answer.replaceable,
             answer.reason,
